@@ -1,0 +1,1 @@
+Run install_dc.sh to install OWASP Dependency-Checker
