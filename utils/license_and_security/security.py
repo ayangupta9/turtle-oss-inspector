@@ -36,4 +36,6 @@ def check_security_files(repo: Repository.Repository):
         ms.signal = False
         ms.message = "No security file"
 
+    print("Completed security")
+
     return ms

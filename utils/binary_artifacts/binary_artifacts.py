@@ -53,5 +53,5 @@ def get_binaries(repo: Repository.Repository):
     else:
         ms.signal = False
         ms.message = "Repository has no binary artifacts"
-
+    print('Completed binary artifact')
     return ms

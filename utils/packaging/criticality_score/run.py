@@ -318,8 +318,10 @@ def get_param_score(param, max_value, weight=1):
     parameter weight."""
     return (math.log(1 + param) / math.log(1 + max(param, max_value))) * weight
 
+
 def get_repository(repo: R.Repository):
     return GitHubRepository(repo)
+
 
 def get_repository_stats(repo):
     """Return repository stats by grabing the raw signal data from the repo."""
@@ -350,6 +352,7 @@ def get_repository_stats(repo):
         result_dict[param] = return_dict[param]
 
     return result_dict
+
 
 def get_repository_score(repo_stats, additional_params=None):
     """Return one repository's criticality score based on repo stats."""
@@ -482,5 +485,7 @@ def get_repository_score_from_raw_stats(repo: R.Repository, params=None):
     ms.signal = True
     ms.payload = repo_stats
     ms.message = "Calculated criticality score with other repository stats"
+
+    print("Completed criticality score")
 
     return ms

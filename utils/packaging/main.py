@@ -24,6 +24,9 @@ def check_if_repo_is_package(repo: Repository.Repository):
         )
     )
 
+    for r in result:
+        del r["versions"]
+
     if len(result) > 0:
         ms.signal = True
         ms.payload = result
@@ -31,6 +34,8 @@ def check_if_repo_is_package(repo: Repository.Repository):
     else:
         ms.signal = False
         ms.message = "Repository has no package(s) associated with it"
+
+    print("Completed packaging check")
 
     return ms
 

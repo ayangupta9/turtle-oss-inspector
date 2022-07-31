@@ -39,3 +39,7 @@ def cii_badge(repo: Repository.Repository):
     else:
         ms.signal = False
         ms.message = "Found no badges"
+
+    print("Completed cii badge")
+
+    return ms

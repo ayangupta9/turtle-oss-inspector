@@ -4,7 +4,7 @@ import requests
 
 
 def get_issues_count(owner: str, repo_name: str):
-    GITHUB_ACCESS_TOKEN = "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"
+    GITHUB_ACCESS_TOKEN = "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"
     url = "https://api.github.com/graphql"
     headers = {"Authorization": f"Bearer {GITHUB_ACCESS_TOKEN}"}
 

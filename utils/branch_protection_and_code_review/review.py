@@ -37,5 +37,7 @@ def get_code_review(repo: Repository.Repository):
 
     ms.signal = True
     ms.payload = review_result
-    
+
+    print("Completed code review")
+
     return ms

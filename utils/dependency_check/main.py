@@ -1,89 +1,109 @@
-import json
-import os
-from github import Repository
-from components.classes.Dependency import Dependency
+import requests
+from github import Github, Repository
+from pprint import pprint
+
+# import xkcd2347
+from tqdm import tqdm
 from components.classes.MetricSignal import MetricSignal
-from components.classes.Vulnerability import Vulnerability
+from utils.packaging.main import check_if_repo_is_package
 
 
-def return_dependencies_from_report(report_path):
-    dependencies = []
-    packages = []
-
-    with open(report_path) as f:
-        json_result = json.load(f)
-        for dependency in json_result["dependencies"]:
-            new_dep = Dependency()
-            if "filePath" in dependency:
-                new_dep.file_path = dependency["filePath"]
-            if "packages" in dependency:
-                pkg_name = dependency["packages"][0].get("id", None).split(":")[1]
-                new_dep.package_name = pkg_name
-                if pkg_name != None:
-                    packages.append(pkg_name)
-
-                pkg_url = dependency["packages"][0].get("url", None)
-                new_dep.package_url = pkg_url
-
-            if "vulnerabilities" in dependency:
-                new_vuln = Vulnerability()
-                for vuln in dependency["vulnerabilities"]:
-                    if "source" in vuln:
-                        new_vuln.source = vuln["source"]
-
-                    if "severity" in vuln:
-                        new_vuln.severity = vuln["severity"]
-
-                    if "name" in vuln:
-                        new_vuln.name = vuln["name"]
-
-                    if "description" in vuln:
-                        new_vuln.description = vuln["description"]
-
-                    if "cvssv3" in vuln:
-                        new_vuln.cvss3 = {
-                            "baseScore": vuln["cvssv3"]["baseScore"],
-                            "userInteraction": vuln["cvssv3"]["userInteraction"],
-                            "confidentialityImpact": vuln["cvssv3"][
-                                "confidentialityImpact"
-                            ],
-                            "integrityImpact": vuln["cvssv3"]["integrityImpact"],
-                            "availabilityImpact": vuln["cvssv3"]["availabilityImpact"],
-                            "baseSeverity": vuln["cvssv3"]["baseSeverity"],
-                            "exploitabilityScore": vuln["cvssv3"][
-                                "exploitabilityScore"
-                            ],
-                            "impactScore": vuln["cvssv3"]["impactScore"],
-                        }
-
-                    if "references" in vuln:
-                        new_vuln.references = vuln["references"][0:20]
-
-                new_dep.vulnerabilities.append(new_vuln.__dict__)
-            dependencies.append(new_dep.__dict__)
-        f.close()
-    return dependencies, packages
+# GITHUB_ACCESS_TOKEN = "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"
+# g = Github(GITHUB_ACCESS_TOKEN)
 
 
-def execute_dependency_check(repo: Repository.Repository):
+def get_vulnerabilites(coordinate: str):
+    headers = {
+        "accept": "application/json",
+        "Content-Type": "application/json",
+        "authorization": "Basic YXlhbmd1cHRhLmRldkBnbWFpbC5jb206MzAzZDZhMTVmMGJlOGIxNGE5MGViM2E4ZDE2YzZlNmI1NmY1NWZjZg==",
+    }
+
+    response = requests.post(
+        "https://ossindex.sonatype.org/api/v3/authorized/component-report",
+        headers=headers,
+        json={"coordinates": [f"{coordinate}"]},
+    )
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return []
+
+
+def get_vuln_dependencies_of_repo(repo: Repository.Repository):
+    #  = g.get_repo("expressjs/express")
+    vuln_deps_result = {}
+
     ms = MetricSignal()
 
-    DEPENDENCY_CHECK_BAT = "shell-process\\dependency-check\\bin\\dependency-check.bat"
-    REPO_PATH = "cloned_repos\\" + repo.name.__str__()
+    m = check_if_repo_is_package(repo=repo)
+    if m.signal:
+        self_repo = m.payload[0]
+        self_coordinate = f"pkg:{self_repo['platform']}/{self_repo['name']}@{self_repo['latest_stable_release_number']}"
+        self_vulns = get_vulnerabilites(self_coordinate)[0]
+        vuln_deps_result[self_repo["name"]] = self_vulns["vulnerabilities"]
 
-    os.system(command=f"git clone {repo.clone_url} {REPO_PATH}")
+    libraries_io_endpoint = f"https://libraries.io/api/github/{repo.owner.login}/{repo.name.__str__()}/dependencies?api_key=15728e4185f58c5eb6feee336aec6682"
+    data = requests.get(url=libraries_io_endpoint)
+    deps = data.json()["dependencies"]
 
-    OUTPUT_REPORT_PATH = "dc-output-reports\\" + repo.name.__str__() + "-report.json"
-    command = f"{DEPENDENCY_CHECK_BAT} --scan {REPO_PATH} --out {OUTPUT_REPORT_PATH} --format JSON --enableExperimental"
-    result = os.system(command=command)
-    if result != 0:
+    if len(deps) == 0:
         ms.signal = False
-        ms.message = "Could not run command properly"
-    else:
-        report_results = return_dependencies_from_report(OUTPUT_REPORT_PATH)
+        ms.message = "No dependencies in the repository"
+        return ms
 
-        ms.signal = True
-        ms.payload = report_results
-        ms.message = "Generated data from reports"
+    for dep in tqdm(deps):
+        version = (
+            dep["requirements"].split("==")[-1]
+            if len(dep["requirements"]) > 1
+            else dep["latest_stable"]
+        )
+
+        coordinate = f'pkg:{dep["platform"]}/{dep["name"]}@{version}'
+        vulns = get_vulnerabilites(coordinate=coordinate)[0]
+
+        # dep_vln = None
+        # if vulns != None and len(vulns) > 0:
+        #     dep_vln = vulns[0]
+
+        if (
+            vulns
+            and "vulnerabilities" in vulns
+            and len(vulns["vulnerabilities"]) > 0
+            and dep["name"] not in vuln_deps_result
+        ):
+            vuln_deps_result[dep["name"]] = vulns["vulnerabilities"]
+
+    ms.signal = True
+    ms.payload = vuln_deps_result
+
+    print("Completed dependency vuln check")
 
     return ms
+
+
+# get_vuln_dependencies_of_repo()
+
+# pprint({"name": dep["name"], "platform": dep["platform"], "version": version})
+
+# gh = xkcd2347.GitHub(key=GITHUB_ACCESS_TOKEN)
+# deps = gh.get_dependencies(
+#     repo_owner=repo.owner.login, repo_name=repo.name.__str__()
+# )
+# for dep in deps:
+#     pprint(dep)
+
+
+# endpoint = f"https://libraries.io/api/github/{repo.owner.login}/projects?api_key=15728e4185f58c5eb6feee336aec6682"
+# data = requests.get(url=endpoint)
+# owner_contributed_to: list = data.json()
+
+# result = list(
+#     filter(
+#         lambda contribution: contribution["name"].lower()
+#         == repo.name.__str__().lower()
+#         and repo.owner.login + "/" + repo.name.__str__()
+#         == contribution["repository_url"].split(".com/")[-1],
+#         owner_contributed_to,
+#     )
+# )

@@ -1,12 +1,15 @@
-# import requests
-# from flask_cors import CORS
-# from flask import Flask, jsonify
+import github
+import requests
+from flask_cors import CORS
+from flask import Flask, jsonify
 
 from datetime import datetime
 import json
 from multiprocessing.pool import ThreadPool
 import os
-from utils.dependency_check.main import execute_dependency_check
+from flask import appcontext_popped
+
+# from utils.dependency_check.main import execute_dependency_check
 from github import Github
 from utils.packaging.criticality_score.run import get_repository_score_from_raw_stats
 from utils.binary_artifacts.binary_artifacts import get_binaries
@@ -17,21 +20,27 @@ from utils.branch_protection_and_code_review.cii_badge import cii_badge
 from utils.branch_protection_and_code_review.review import get_code_review
 from utils.contributors.main import get_contributors_stats
 from utils.dependency_check.dependency_update_check import has_dependency_update_tool
-from utils.dependency_check.main import execute_dependency_check
+
+# from utils.dependency_check.main import execute_dependency_check
 from utils.license_and_security.license import license_stats
 from utils.license_and_security.security import check_security_files
 from utils.maintenance.main import project_maintained
 from utils.packaging.main import check_if_repo_is_package
+from utils.dependency_check.main import get_vuln_dependencies_of_repo
 
 
 pool = ThreadPool(processes=11)
 
-GITHUB_ACCESS_TOKEN = "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"
+GITHUB_ACCESS_TOKEN = "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"
 g = Github(GITHUB_ACCESS_TOKEN)
 
 
-# app = Flask(__name__)
-# CORS(app=app)
+# github.enable_console_debug_logging()
+
+
+app = Flask(__name__)
+CORS(app=app)
+
 
 def create_html_report():
     pass
@@ -42,62 +51,69 @@ def main():
     # * DECLARE REPOSITORY WITH OWENER NAME AND REPO NAME IN THIS FORMAT ->
     #                  {owner_name/repo_name}
     repo = g.get_repo("ayangupta9/oss_test_repo")
+    repo2 = g.get_repo("ayangupta9/ieee_gcet_backend")
+    repo3 = g.get_repo("nodejs/node")
+    repo4 = g.get_repo("expressjs/express")
     license_repo = g.get_repo("spdx/license-list-data")
+
+
+    # for org in list(g.get_user('ayangupta9').get_orgs()):
+        
 
     # * TESTS
 
     # ! html done
     binary_artifacts_result = pool.apply_async(
         get_binaries, args=(repo,)
-    )  # * BINARY ARTIFACTS TEST 
+    )  # * BINARY ARTIFACTS TEST
 
     branch_protection_result = pool.apply_async(
-        get_branch_protection, args=(repo,)
+        get_branch_protection, args=(repo2,)
     )  # * BRANCH PROTECTION
 
     # ! html done
     badge_result = pool.apply_async(
-        cii_badge, args=(repo,)
+        cii_badge, args=(repo3,)
     )  # * CII BEST PRACTICES BADGES
 
     code_review_result = pool.apply_async(
-        get_code_review, args=(repo,)
+        get_code_review, args=(repo3,)
     )  # * BASIC CODE & REPO REVIEW
 
     contri_result = pool.apply_async(
-        get_contributors_stats, args=(repo,)
+        get_contributors_stats, args=(repo3,)
     )  # * CONTRIBUTORS REVIEW
 
     dep_up_tool_result = pool.apply_async(
-        has_dependency_update_tool, args=(repo,)
+        has_dependency_update_tool, args=(repo3,)
     )  # * DEPENDENCY UPDATE TOOL CHECK
 
     dep_check = pool.apply_async(
-        execute_dependency_check, args=(repo,)
+        get_vuln_dependencies_of_repo, args=(repo4,)
     )  # * OWASP DEPENDENCY CHECK
 
     license_result = pool.apply_async(
         license_stats,
         args=(
-            repo7,
+            repo4,
             license_repo,
         ),
     )  # * LICENSE CHECK
 
     security_result = pool.apply_async(
-        check_security_files, args=(repo,)
+        check_security_files, args=(repo4,)
     )  # * SECURITY CHECK
 
     maintenance_result = pool.apply_async(
-        project_maintained, args=(repo,)
+        project_maintained, args=(repo4,)
     )  # * MAINTENANCE CHECK
 
     repo_is_pack_result = pool.apply_async(
-        check_if_repo_is_package, args=(repo,)
+        check_if_repo_is_package, args=(repo4,)
     )  # * PACKAGE CHECK
 
     criticality_score_result = pool.apply_async(
-        get_repository_score_from_raw_stats, args=(repo,)
+        get_repository_score_from_raw_stats, args=(repo4,)
     )  # * CRITICALITY SCORE
 
     # ! ALL CHECK RESULTS
@@ -113,6 +129,8 @@ def main():
     maintenance_result = maintenance_result.get()
     repo_is_pack_result = repo_is_pack_result.get()
     criticality_score_result = criticality_score_result.get()
+
+    print("All completed")
 
     # * CUMULATION OF RESULTS
     final_result = {
@@ -130,9 +148,14 @@ def main():
         "criticality_score_result": criticality_score_result.__dict__,
     }
 
+    # print(final_result)
+
+# _{datetime.now().__str__().split('.')[0]
+
     # * RESULTS DUMPED INTO JSON AND SAVED
     with open(
-        f"{repo.owner.login}_{repo.name.__str__()}_result_{datetime.now().__str__().split('.')[0]}.json",
+        # f"{repo.owner.login}_{repo.name.__str__()}_result.json",
+        f"result1.json",
         "w",
     ) as open_file:
         print("Writing data in json file")
@@ -154,4 +177,15 @@ def init():
         os.mkdir(dependency_check_reports_path)
 
 
-init()
+def start():
+    init()
+    main()
+
+
+start()
+# ms = get_vuln_dependencies_of_repo()
+
+# if __name__ == "__main__":
+
+
+# init()

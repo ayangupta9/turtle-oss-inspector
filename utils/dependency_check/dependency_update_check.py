@@ -47,4 +47,6 @@ def has_dependency_update_tool(repo: Repository.Repository):
         ms.message = "Repository lacks dependency update tool"
         ms.signal = False
 
+    print('Completed dependency update check')
+
     return ms

@@ -23,8 +23,9 @@ def get_contributors_stats(repo: Repository.Repository):
     commit_authors = {}
 
     ms = MetricSignal()
+    commits_since_time = datetime.now() + timedelta(weeks=-1)
 
-    commits = list(repo.get_commits(since=datetime.now() + timedelta(weeks=-1)))
+    commits = list(repo.get_commits(since=commits_since_time))
     total_commits = len(commits)
 
     for commit in commits:
@@ -39,6 +40,10 @@ def get_contributors_stats(repo: Repository.Repository):
                 commit_authors[commit.author.login] = {}
                 commit_authors[commit.author.login]["company"] = pc
                 commit_authors[commit.author.login]["commits_count"] = 1
+                commit_authors[commit.author.login]["orgs"] = [
+                    x.name.__str__() for x in commit.author.get_orgs()
+                ]
+
             else:
                 commit_authors[commit.author.login]["commits_count"] += 1
 
@@ -46,12 +51,12 @@ def get_contributors_stats(repo: Repository.Repository):
 
     ms.signal = True
     ms.payload = {
-        "distinct_companies": companies,
-        "legit_contributors": {
-            "count": legit_contributors,
-            "contributors": commit_authors,
-        },
+        "commits_since": str(commits_since_time),
+        "distinct_companies": list(companies),
+        "legit_contributors": commit_authors,
         "total_commits": total_commits,
     }
+
+    print("Completed contributors")
 
     return ms

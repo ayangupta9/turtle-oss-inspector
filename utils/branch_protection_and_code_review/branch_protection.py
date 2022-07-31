@@ -97,5 +97,5 @@ def get_branch_protection(repo: Repository.Repository):
         "branch_protection_score": branch_protection_score,
         "branch_protection_output": branch_protection_output,
     }
-
+    print('Completed branch protection')
     return ms
