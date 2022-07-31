@@ -49,9 +49,11 @@ def get_binaries(repo: Repository.Repository):
         ms.signal = True
         ms.payload = {"executables": executables}
         ms.message = "Repository has binary artifacts. Be careful"
+        ms.score = 0
 
     else:
         ms.signal = False
         ms.message = "Repository has no binary artifacts"
-    print('Completed binary artifact')
+        ms.threat = 0
+    print("Completed binary artifact")
     return ms

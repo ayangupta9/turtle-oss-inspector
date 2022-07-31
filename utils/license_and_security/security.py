@@ -22,6 +22,7 @@ def check_security_files(repo: Repository.Repository):
             ]:
                 content_file = repo.get_contents(element.path)
                 ms.signal = True
+                ms.score = 1.0
                 ms.payload = (
                     repo.clone_url.split(".git")[0]
                     + "/tree/"

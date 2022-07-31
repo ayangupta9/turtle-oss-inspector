@@ -31,7 +31,6 @@ def get_vulnerabilites(coordinate: str):
 
 
 def get_vuln_dependencies_of_repo(repo: Repository.Repository):
-    #  = g.get_repo("expressjs/express")
     vuln_deps_result = {}
 
     ms = MetricSignal()
@@ -62,10 +61,6 @@ def get_vuln_dependencies_of_repo(repo: Repository.Repository):
         coordinate = f'pkg:{dep["platform"]}/{dep["name"]}@{version}'
         vulns = get_vulnerabilites(coordinate=coordinate)[0]
 
-        # dep_vln = None
-        # if vulns != None and len(vulns) > 0:
-        #     dep_vln = vulns[0]
-
         if (
             vulns
             and "vulnerabilities" in vulns
@@ -73,10 +68,12 @@ def get_vuln_dependencies_of_repo(repo: Repository.Repository):
             and dep["name"] not in vuln_deps_result
         ):
             vuln_deps_result[dep["name"]] = vulns["vulnerabilities"]
+            ms.score += 1.0
 
     ms.signal = True
     ms.payload = vuln_deps_result
-
+    ms.score /= len(deps)
+    ms.score = 1 - ms.score
     print("Completed dependency vuln check")
 
     return ms

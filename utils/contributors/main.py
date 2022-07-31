@@ -47,9 +47,14 @@ def get_contributors_stats(repo: Repository.Repository):
             else:
                 commit_authors[commit.author.login]["commits_count"] += 1
 
-    legit_contributors = total_commits - len(list(commit_authors.keys()))
-
     ms.signal = True
+
+    if len(list(companies)) > 3:
+        ms.score += 0.3
+    if len(commit_authors.keys()) / 3 >= total_commits:
+        ms.score += 0.3
+       
+
     ms.payload = {
         "commits_since": str(commits_since_time),
         "distinct_companies": list(companies),

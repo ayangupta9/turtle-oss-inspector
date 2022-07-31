@@ -127,6 +127,8 @@ def code_review_component(data):
 
 def contributors_component(data):
 
+    html_code = ""
+
     template = Template(
         template="""
      <div class="contributors-content">
@@ -169,19 +171,49 @@ def contributors_component(data):
             <p class="m-0">{(", ".join(contributor_stats['orgs'])).rstrip(', ')}</p>
         </li>
         """
-        
 
-    template.substitute(
+    html_code = template.substitute(
         total_commits=data["payload"]["total_commits"],
         legit_contri_count=len(data["payload"]["legit_contributors"]),
         companies=(", ".join(data["payload"]["distinct_companies"])).rstrip(", "),
-        contributors_items = list_items
+        contributors_items=list_items,
     )
 
-    pass
+    return html_code
 
 
-def dependency_check_component(data):
+def dependency_check_component(data1, data2):
+
+    html_code = ""
+
+    template = Template(
+        template=f"""
+        <p><b><a href="{data1['payload']}">Dependency Update tool</a></b></p>
+        <div class="accordion-wrapper">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="false"
+                            aria-controls="collapseOne">
+                            $dep_name
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse"
+                        aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <p class="m-0"><b>CVSS score:</b> 2.1</p>
+                            <p class="m-0"><b>Severity</b> HIGH</p>
+                            <p class="m-0">Description</p>
+                            <p class="m-0"><a href="">Ref</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    """
+    )
+
     pass
 
 

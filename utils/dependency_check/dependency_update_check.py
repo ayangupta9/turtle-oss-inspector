@@ -42,11 +42,13 @@ def has_dependency_update_tool(repo: Repository.Repository):
         ms.signal = True
         ms.message = "Repository has dependency update tool"
         ms.payload = dependency_update_tool_result
+        ms.score = 1.0
 
     else:
         ms.message = "Repository lacks dependency update tool"
         ms.signal = False
+        ms.score = 0.0
 
-    print('Completed dependency update check')
+    print("Completed dependency update check")
 
     return ms

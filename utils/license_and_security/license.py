@@ -31,13 +31,17 @@ def license_stats(repo: Repository.Repository, license_repo: Repository.Reposito
         license_stats_results["exists"] = True
         license_stats_results["repo_license"] = license.license.raw_data
         license_score += 1
+
         spdx_license = license_list.get(license.license.spdx_id, None)
         if spdx_license:
+            license_score += 1
             license_stats_results["license_data"] = spdx_license
             if spdx_license["isDeprecatedLicenseId"] == False:
                 license_score += 1
+
             if spdx_license["isOsiApproved"] == True:
                 license_score += 1
+                
             ms.signal = True
             ms.message = "License data fetched"
 
@@ -52,6 +56,8 @@ def license_stats(repo: Repository.Repository, license_repo: Repository.Reposito
         "license_stats_results": license_stats_results,
         "license_score": license_score,
     }
+
+    ms.score = license_score / 4
 
     print("Completed license")
 

@@ -13,19 +13,27 @@ from components.classes.MetricSignal import MetricSignal
 
 
 def get_commits(repo: Repository.Repository):
+    commits_score = 0
+
     commits_stats_result = {}
     for stat in list(repo.get_stats_commit_activity()):
+        if stat.total != 0:
+            commits_score += 1
         commits_stats_result[str(stat.week)] = stat.total
-    return commits_stats_result
+    return (commits_stats_result, commits_score)
 
 
 def project_maintained(repo: Repository.Repository):
     is_archived = repo.archived
 
+    score = 0
+
     ms = MetricSignal()
 
     if not is_archived:
-        git_stats = get_commits(repo=repo)
+        score += 1
+        git_stats, commits_score = get_commits(repo=repo)
+        score += commits_score
 
         ms.signal = True
         ms.payload = git_stats
@@ -33,6 +41,8 @@ def project_maintained(repo: Repository.Repository):
     else:
         ms.message = "Repository is archived"
         ms.signal = False
+
+    ms.score = score / (len(git_stats.keys()) + 1)
 
     print("Completed maintenance")
 

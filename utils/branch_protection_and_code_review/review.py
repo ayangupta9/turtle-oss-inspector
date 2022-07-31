@@ -35,6 +35,8 @@ def get_code_review(repo: Repository.Repository):
     review_result["protected"] = is_protected
     review_result["issues_stats"] = get_issues_stats(repo=repo)
 
+    
+
     ms.signal = True
     ms.payload = review_result
 

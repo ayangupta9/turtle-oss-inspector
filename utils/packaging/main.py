@@ -29,6 +29,7 @@ def check_if_repo_is_package(repo: Repository.Repository):
 
     if len(result) > 0:
         ms.signal = True
+        ms.score = 1.0
         ms.payload = result
         ms.message = "Repository has package(s) associated with it"
     else:

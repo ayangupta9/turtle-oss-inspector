@@ -482,6 +482,8 @@ def get_repository_score_from_raw_stats(repo: R.Repository, params=None):
     repo_stats = get_repository_stats(repo)
     repo_stats["criticality_score"] = get_repository_score(repo_stats, params)
 
+    
+
     ms.signal = True
     ms.payload = repo_stats
     ms.message = "Calculated criticality score with other repository stats"

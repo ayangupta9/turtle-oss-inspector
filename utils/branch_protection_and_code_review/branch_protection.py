@@ -90,12 +90,16 @@ def get_branch_protection(repo: Repository.Repository):
         except Exception:
             ms.message = "Branch is protected but branch protection stats not accessible. Needs admin/curator rights of the repository"
         ms.signal = True
+
     else:
         ms.signal = False
         ms.message = "Branch is not protected"
+
+    ms.score = branch_protection_score / 9
     ms.payload = {
         "branch_protection_score": branch_protection_score,
         "branch_protection_output": branch_protection_output,
     }
-    print('Completed branch protection')
+
+    print("Completed branch protection")
     return ms

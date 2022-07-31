@@ -56,9 +56,7 @@ def main():
     repo4 = g.get_repo("expressjs/express")
     license_repo = g.get_repo("spdx/license-list-data")
 
-
     # for org in list(g.get_user('ayangupta9').get_orgs()):
-        
 
     # * TESTS
 
@@ -130,27 +128,46 @@ def main():
     repo_is_pack_result = repo_is_pack_result.get()
     criticality_score_result = criticality_score_result.get()
 
+    RESULTS_WEIGHTS = {
+        "BINARY_ARTIFACTS_RESULT": 1,
+        "BRANCH_PROTECTION_RESULT": 1,
+        "BADGE_RESULT": 2,
+        "CODE_REVIEW_RESULT": 1,
+        "CONTRI_RESULT": 1,
+        "DEP_UP_TOOL_RESULT": 1,
+        "DEP_CHECK": 3,
+        "LICENSE_RESULT": 0.5,
+        "SECURITY_RESULT": 0.5,
+        "MAINTENANCE_RESULT": 1,
+        "REPO_IS_PACK_RESULT": 1,
+        "CRITICALITY_SCORE_RESULT": 2,
+    }
+
     print("All completed")
 
     # * CUMULATION OF RESULTS
     final_result = {
-        "binary_artifacts_result": binary_artifacts_result.__dict__,
-        "branch_protection_result": branch_protection_result.__dict__,
-        "badge_result": badge_result.__dict__,
-        "code_review_result": code_review_result.__dict__,
-        "contri_result": contri_result.__dict__,
-        "dep_up_tool_result": dep_up_tool_result.__dict__,
-        "dep_check": dep_check.__dict__,
-        "license_result": license_result.__dict__,
-        "security_result": security_result.__dict__,
-        "maintenance_result": maintenance_result.__dict__,
-        "repo_is_pack_result": repo_is_pack_result.__dict__,
-        "criticality_score_result": criticality_score_result.__dict__,
+        "BINARY_ARTIFACTS_RESULT": binary_artifacts_result.__dict__,
+        "BRANCH_PROTECTION_RESULT": branch_protection_result.__dict__,
+        "BADGE_RESULT": badge_result.__dict__,
+        "CODE_REVIEW_RESULT": code_review_result.__dict__,
+        "CONTRI_RESULT": contri_result.__dict__,
+        "DEP_UP_TOOL_RESULT": dep_up_tool_result.__dict__,
+        "DEP_CHECK": dep_check.__dict__,
+        "LICENSE_RESULT": license_result.__dict__,
+        "SECURITY_RESULT": security_result.__dict__,
+        "MAINTENANCE_RESULT": maintenance_result.__dict__,
+        "REPO_IS_PACK_RESULT": repo_is_pack_result.__dict__,
+        "CRITICALITY_SCORE_RESULT": criticality_score_result.__dict__,
     }
 
     # print(final_result)
 
-# _{datetime.now().__str__().split('.')[0]
+    final_score = 0
+    for key, stats in final_result.items():
+        final_score += stats.score * RESULTS_WEIGHTS[key]
+    
+    # _{datetime.now().__str__().split('.')[0]
 
     # * RESULTS DUMPED INTO JSON AND SAVED
     with open(

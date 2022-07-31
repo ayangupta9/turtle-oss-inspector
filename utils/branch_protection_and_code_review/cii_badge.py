@@ -28,16 +28,24 @@ def cii_badge(repo: Repository.Repository):
                 cii_badge_results["tiered_percentage"] = cii_data["tiered_percentage"]
             if "badge_level" in cii_data:
                 cii_badge_results["badge_level"] = cii_data["badge_level"]
-
     else:
         ms.message = "Could not get data"
 
+    if cii_badge_results["badge_level"] == "passing":
+        ms.score = 0.3
+    elif cii_badge_results["badge_level"] == "silver":
+        ms.score = 0.6
+    elif cii_badge_results["badge_level"] == "gold":
+        ms.score = 1.0
+
+    
     if len(cii_badge_results.keys()) > 0:
         ms.signal = True
         ms.payload = cii_badge_results
         ms.message = "Found CII Best practice badges"
     else:
         ms.signal = False
+        ms.score = 0
         ms.message = "Found no badges"
 
     print("Completed cii badge")
