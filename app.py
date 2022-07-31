@@ -1,6 +1,3 @@
-from typing import final
-import github
-import requests
 from flask_cors import CORS
 from flask import Flask, jsonify
 
@@ -43,17 +40,13 @@ app = Flask(__name__)
 CORS(app=app)
 
 
-def create_html_report():
-    pass
-
-
 def main():
 
     # * DECLARE REPOSITORY WITH OWENER NAME AND REPO NAME IN THIS FORMAT ->
     #                  {owner_name/repo_name}
-    repo = g.get_repo("ayangupta9/oss_test_repo")
-    repo2 = g.get_repo("ayangupta9/ieee_gcet_backend")
-    repo3 = g.get_repo("nodejs/node")
+    # repo = g.get_repo("ayangupta9/oss_test_repo")
+    # repo2 = g.get_repo("ayangupta9/ieee_gcet_backend")
+    # repo3 = g.get_repo("nodejs/node")
     repo4 = g.get_repo("expressjs/express")
     license_repo = g.get_repo("spdx/license-list-data")
 
@@ -63,28 +56,28 @@ def main():
 
     # ! html done
     binary_artifacts_result = pool.apply_async(
-        get_binaries, args=(repo,)
+        get_binaries, args=(repo4,)
     )  # * BINARY ARTIFACTS TEST
 
     branch_protection_result = pool.apply_async(
-        get_branch_protection, args=(repo2,)
+        get_branch_protection, args=(repo4,)
     )  # * BRANCH PROTECTION
 
     # ! html done
     badge_result = pool.apply_async(
-        cii_badge, args=(repo3,)
+        cii_badge, args=(repo4,)
     )  # * CII BEST PRACTICES BADGES
 
     code_review_result = pool.apply_async(
-        get_code_review, args=(repo3,)
+        get_code_review, args=(repo4,)
     )  # * BASIC CODE & REPO REVIEW
 
     contri_result = pool.apply_async(
-        get_contributors_stats, args=(repo3,)
+        get_contributors_stats, args=(repo4,)
     )  # * CONTRIBUTORS REVIEW
 
     dep_up_tool_result = pool.apply_async(
-        has_dependency_update_tool, args=(repo3,)
+        has_dependency_update_tool, args=(repo4,)
     )  # * DEPENDENCY UPDATE TOOL CHECK
 
     dep_check = pool.apply_async(
@@ -131,14 +124,16 @@ def main():
 
     RESULTS_WEIGHTS = {
         "BINARY_ARTIFACTS_RESULT": 1,
-        "BRANCH_PROTECTION_RESULT": 1,
+        "BRANCH_PROTECTION_RESULT": 1
+        if branch_protection_result["payload"]["signal"] == True
+        else 0,
         "BADGE_RESULT": 2,
         "CODE_REVIEW_RESULT": 1,
         "CONTRI_RESULT": 1,
         "DEP_UP_TOOL_RESULT": 1,
         "DEP_CHECK": 3,
-        "LICENSE_RESULT": 0.5,
-        "SECURITY_RESULT": 0.5,
+        "LICENSE_RESULT": 0,
+        "SECURITY_RESULT": 0,
         "MAINTENANCE_RESULT": 1,
         "REPO_IS_PACK_RESULT": 1,
         "CRITICALITY_SCORE_RESULT": 2,
@@ -159,7 +154,7 @@ def main():
         "SECURITY_RESULT": security_result.__dict__,
         "MAINTENANCE_RESULT": maintenance_result.__dict__,
         "REPO_IS_PACK_RESULT": repo_is_pack_result.__dict__,
-        "CRITICALITY_SCORE_RESULT": criticality_score_result.__dict__
+        "CRITICALITY_SCORE_RESULT": criticality_score_result.__dict__,
     }
 
     result = 0
@@ -168,17 +163,19 @@ def main():
     # print(final_result)
     final_score = 0
     for key, stats in final_result.items():
-        final_score += stats.score * RESULTS_WEIGHTS[key]
+        print(stats)
+        final_score += stats["score"] * RESULTS_WEIGHTS[key]
     # _{datetime.now().__str__().split('.')[0]
 
     # update final_result with final score
     final_result["FINAL_SCORE"] = final_score
-    final_result["RESULT_SCORE"] = final_score/result
+    final_result["TOTAL_SCORE"] = result
+    final_result["RESULT_SCORE"] = final_score / result
 
     # * RESULTS DUMPED INTO JSON AND SAVED
     with open(
         # f"{repo.owner.login}_{repo.name.__str__()}_result.json",
-        f"client//src//result1.json",
+        f"public\\assets\\reports\\{repo4.owner.login}_{repo4.name.__str__()}.json",
         "w",
     ) as open_file:
         print("Writing data in json file")
@@ -186,22 +183,8 @@ def main():
         print("Data completely written.\n")
 
 
-def init():
-    cloned_repos_path = "cloned_repos\\"
-    cloned_repos_dir_exists = os.path.exists(cloned_repos_path)
-
-    if not cloned_repos_dir_exists:
-        os.mkdir(cloned_repos_path)
-
-    dependency_check_reports_path = "dc_output_reports\\"
-    dc_reports_dir_exists = os.path.exists(dependency_check_reports_path)
-
-    if not dc_reports_dir_exists:
-        os.mkdir(dependency_check_reports_path)
-
-
 def start():
-    init()
+    # init()
     main()
 
 

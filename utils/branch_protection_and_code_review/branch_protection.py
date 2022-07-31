@@ -87,9 +87,13 @@ def get_branch_protection(repo: Repository.Repository):
                 ms.message = (
                     "Branch is protected and branch protection stats is accessible."
                 )
+
+                ms.signal = True
+
+
         except Exception:
             ms.message = "Branch is protected but branch protection stats not accessible. Needs admin/curator rights of the repository"
-        ms.signal = True
+            ms.signal = False
 
     else:
         ms.signal = False

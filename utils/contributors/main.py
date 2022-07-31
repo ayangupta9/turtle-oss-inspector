@@ -51,8 +51,8 @@ def get_contributors_stats(repo: Repository.Repository):
 
     if len(list(companies)) > 3:
         ms.score += 0.5
-    if len(commit_authors.keys()) / 3 >= total_commits:
-        ms.score += 0.5
+        if len(commit_authors.keys()) / 3 >= total_commits:
+            ms.score += 0.5
 
     ms.payload = {
         "commits_since": str(commits_since_time),

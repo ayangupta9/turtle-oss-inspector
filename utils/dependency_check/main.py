@@ -59,8 +59,13 @@ def get_vuln_dependencies_of_repo(repo: Repository.Repository):
         )
 
         coordinate = f'pkg:{dep["platform"]}/{dep["name"]}@{version}'
-        vulns = get_vulnerabilites(coordinate=coordinate)[0]
+        vulns = get_vulnerabilites(coordinate=coordinate)
+        if vulns != None and len(vulns) > 0:
+            vulns = vulns[0]
+        else:
+            continue
 
+        
         if (
             vulns
             and "vulnerabilities" in vulns

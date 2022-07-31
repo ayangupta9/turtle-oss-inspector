@@ -27,8 +27,10 @@ export default function Report (props) {
         <Score score={data?.RESULT_SCORE} />
       </header>
 
-  <p className='w-100 text-end'>For more info, refer <code>JSON file</code> in the{' '} <code>assets/reports</code> directory</p>        
-
+      <p className='w-100 text-end'>
+        For more info, refer <code>JSON file</code> in the{' '}
+        <code>assets/reports</code> directory
+      </p>
 
       <main className='w-100'>
         <div className='d-flex w-100 flex-wrap row'>
