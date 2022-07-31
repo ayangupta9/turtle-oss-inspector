@@ -1,3 +1,4 @@
+from typing import final
 import github
 import requests
 from flask_cors import CORS
@@ -158,21 +159,26 @@ def main():
         "SECURITY_RESULT": security_result.__dict__,
         "MAINTENANCE_RESULT": maintenance_result.__dict__,
         "REPO_IS_PACK_RESULT": repo_is_pack_result.__dict__,
-        "CRITICALITY_SCORE_RESULT": criticality_score_result.__dict__,
+        "CRITICALITY_SCORE_RESULT": criticality_score_result.__dict__
     }
 
+    result = 0
+    for key, stats in RESULTS_WEIGHTS.items():
+        result += RESULTS_WEIGHTS[key]
     # print(final_result)
-
     final_score = 0
     for key, stats in final_result.items():
         final_score += stats.score * RESULTS_WEIGHTS[key]
-    
     # _{datetime.now().__str__().split('.')[0]
+
+    # update final_result with final score
+    final_result["FINAL_SCORE"] = final_score
+    final_result["RESULT_SCORE"] = final_score/result
 
     # * RESULTS DUMPED INTO JSON AND SAVED
     with open(
         # f"{repo.owner.login}_{repo.name.__str__()}_result.json",
-        f"result1.json",
+        f"client//src//result1.json",
         "w",
     ) as open_file:
         print("Writing data in json file")
