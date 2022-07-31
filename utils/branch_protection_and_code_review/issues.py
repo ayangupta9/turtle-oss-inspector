@@ -57,7 +57,6 @@ def get_issues_stats(repo: Repository.Repository):
         )
         issues_stats["open_issues"] = repo.open_issues_count
         issues_stats["closed_issues"] = total_issues_count - repo.open_issues_count
-
         issues_stats["bug_issues"] = get_bug_issues(repo)
         return issues_stats
     else:

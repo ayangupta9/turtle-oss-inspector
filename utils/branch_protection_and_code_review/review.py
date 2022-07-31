@@ -8,9 +8,11 @@ from utils.branch_protection_and_code_review.issues import get_issues_stats
 def get_code_review(repo: Repository.Repository):
 
     ms = MetricSignal()
-
+    score = 0
     # * check 1
     is_archived = repo.archived
+    if not is_archived:
+        score += 1
     review_result = {}
     review_result["archived"] = is_archived
 
@@ -19,6 +21,8 @@ def get_code_review(repo: Repository.Repository):
     approving_review_count = None
     branch = repo.get_branch(repo.default_branch)
     is_protected = branch.protected
+    if is_protected:
+        score += 1
 
     if is_protected == True:
         try:
@@ -32,14 +36,16 @@ def get_code_review(repo: Repository.Repository):
         finally:
             review_result["approving_review_count"] = approving_review_count
 
+
     review_result["protected"] = is_protected
     review_result["issues_stats"] = get_issues_stats(repo=repo)
 
-    
+    if approving_review_count != None:
+        score += 1    
 
     ms.signal = True
     ms.payload = review_result
-
+    ms.score = score / 3
     print("Completed code review")
 
     return ms
