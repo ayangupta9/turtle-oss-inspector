@@ -1,8 +1,12 @@
 from github import Repository
 from components.classes.MetricSignal import MetricSignal
+from dotenv import load_dotenv
+import os
 
 # from issues import get_issues_stats
 from utils.branch_protection_and_code_review.issues import get_issues_stats
+
+load_dotenv()
 
 
 def get_code_review(repo: Repository.Repository):
@@ -36,12 +40,13 @@ def get_code_review(repo: Repository.Repository):
         finally:
             review_result["approving_review_count"] = approving_review_count
 
-
     review_result["protected"] = is_protected
-    review_result["issues_stats"] = get_issues_stats(repo=repo)
+    review_result["issues_stats"] = get_issues_stats(
+        repo=repo, GITHUB_ACCESS_TOKEN=os.getenv("GITHUB_ACCESS_TOKEN")
+    )
 
     if approving_review_count != None:
-        score += 1    
+        score += 1
 
     ms.signal = True
     ms.payload = review_result

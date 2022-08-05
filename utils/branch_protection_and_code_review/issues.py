@@ -2,9 +2,7 @@ from string import Template
 from github import Repository
 import requests
 
-
-def get_issues_count(owner: str, repo_name: str):
-    GITHUB_ACCESS_TOKEN = "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"
+def get_issues_count(owner: str, repo_name: str, GITHUB_ACCESS_TOKEN: str):
     url = "https://api.github.com/graphql"
     headers = {"Authorization": f"Bearer {GITHUB_ACCESS_TOKEN}"}
 
@@ -49,11 +47,13 @@ def get_bug_issues(repo: Repository.Repository):
     return bug_results
 
 
-def get_issues_stats(repo: Repository.Repository):
+def get_issues_stats(repo: Repository.Repository, GITHUB_ACCESS_TOKEN: str):
     issues_stats = {}
     if repo.has_issues:
         total_issues_count = get_issues_count(
-            owner=repo.owner.login, repo_name=repo.name.__str__()
+            owner=repo.owner.login,
+            repo_name=repo.name.__str__(),
+            GITHUB_ACCESS_TOKEN=GITHUB_ACCESS_TOKEN,
         )
         issues_stats["open_issues"] = repo.open_issues_count
         issues_stats["closed_issues"] = total_issues_count - repo.open_issues_count

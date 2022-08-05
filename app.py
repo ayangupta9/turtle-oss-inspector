@@ -25,35 +25,24 @@ from utils.license_and_security.security import check_security_files
 from utils.maintenance.main import project_maintained
 from utils.packaging.main import check_if_repo_is_package
 from utils.dependency_check.main import get_vuln_dependencies_of_repo
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 
 pool = ThreadPool(processes=11)
-
-GITHUB_ACCESS_TOKEN = "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"
-g = Github(GITHUB_ACCESS_TOKEN)
-
-
-# github.enable_console_debug_logging()
-
-
-app = Flask(__name__)
-CORS(app=app)
+g = Github(os.getenv('GITHUB_ACCESS_TOKEN'))
 
 
 def main():
 
     # * DECLARE REPOSITORY WITH OWENER NAME AND REPO NAME IN THIS FORMAT ->
-    #                  {owner_name/repo_name}
-    # repo = g.get_repo("ayangupta9/oss_test_repo")
-    # repo2 = g.get_repo("ayangupta9/ieee_gcet_backend")
-    # repo3 = g.get_repo("nodejs/node")
     repo4 = g.get_repo("expressjs/express")
     license_repo = g.get_repo("spdx/license-list-data")
 
-    # for org in list(g.get_user('ayangupta9').get_orgs()):
-
     # * TESTS
-
     # ! html done
     binary_artifacts_result = pool.apply_async(
         get_binaries, args=(repo4,)
@@ -124,9 +113,7 @@ def main():
 
     RESULTS_WEIGHTS = {
         "BINARY_ARTIFACTS_RESULT": 1,
-        "BRANCH_PROTECTION_RESULT": 1
-        if branch_protection_result["payload"]["signal"] == True
-        else 0,
+        "BRANCH_PROTECTION_RESULT": 1 if branch_protection_result.signal == True else 0,
         "BADGE_RESULT": 2,
         "CODE_REVIEW_RESULT": 1,
         "CONTRI_RESULT": 1,

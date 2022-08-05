@@ -1,6 +1,8 @@
 import requests
 from github import Github, Repository
 from pprint import pprint
+from dotenv import load_dotenv
+import os
 
 # import xkcd2347
 from tqdm import tqdm
@@ -8,15 +10,14 @@ from components.classes.MetricSignal import MetricSignal
 from utils.packaging.main import check_if_repo_is_package
 
 
-# GITHUB_ACCESS_TOKEN = "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"
-# g = Github(GITHUB_ACCESS_TOKEN)
+load_dotenv()
 
 
 def get_vulnerabilites(coordinate: str):
     headers = {
         "accept": "application/json",
         "Content-Type": "application/json",
-        "authorization": "Basic YXlhbmd1cHRhLmRldkBnbWFpbC5jb206MzAzZDZhMTVmMGJlOGIxNGE5MGViM2E4ZDE2YzZlNmI1NmY1NWZjZg==",
+        "authorization": f"Basic {os.getenv('OSS_INDEX_API_KEY')}",
     }
 
     response = requests.post(
@@ -65,7 +66,6 @@ def get_vuln_dependencies_of_repo(repo: Repository.Repository):
         else:
             continue
 
-        
         if (
             vulns
             and "vulnerabilities" in vulns
@@ -82,30 +82,3 @@ def get_vuln_dependencies_of_repo(repo: Repository.Repository):
     print("Completed dependency vuln check")
 
     return ms
-
-
-# get_vuln_dependencies_of_repo()
-
-# pprint({"name": dep["name"], "platform": dep["platform"], "version": version})
-
-# gh = xkcd2347.GitHub(key=GITHUB_ACCESS_TOKEN)
-# deps = gh.get_dependencies(
-#     repo_owner=repo.owner.login, repo_name=repo.name.__str__()
-# )
-# for dep in deps:
-#     pprint(dep)
-
-
-# endpoint = f"https://libraries.io/api/github/{repo.owner.login}/projects?api_key=15728e4185f58c5eb6feee336aec6682"
-# data = requests.get(url=endpoint)
-# owner_contributed_to: list = data.json()
-
-# result = list(
-#     filter(
-#         lambda contribution: contribution["name"].lower()
-#         == repo.name.__str__().lower()
-#         and repo.owner.login + "/" + repo.name.__str__()
-#         == contribution["repository_url"].split(".com/")[-1],
-#         owner_contributed_to,
-#     )
-# )
